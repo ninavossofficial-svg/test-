@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Special Execution for Madam Ji</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        body { background-color: #ffeff2; font-family: 'Segoe UI', Tahoma, sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; overflow: hidden; margin: 0; }
+        .container { text-align: center; background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 90%; max-width: 450px; z-index: 10; position: relative; max-height: 90vh; overflow-y: auto; }
+        h1 { color: #d63384; font-size: 22px; min-height: 60px; }
+        .buttons { margin-top: 20px; display: flex; justify-content: center; gap: 15px; position: relative; height: 50px; }
+        button { padding: 10px 25px; border: none; border-radius: 50px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        #yesBtn { background-color: #4caf50; color: white; }
+        #noBtn { background-color: #f44336; color: white; position: relative; }
+        
+        .heart { position: absolute; color: rgba(214, 51, 132, 0.2); font-size: 20px; animation: float 5s infinite linear; z-index: 1; }
+        @keyframes float { 0% { transform: translateY(100vh) rotate(0deg); opacity: 1; } 100% { transform: translateY(-10vh) rotate(360deg); opacity: 0; } }
+
+        #passwordArea { display: none; margin-top: 20px; }
+        #passwordArea input { padding: 10px; border-radius: 10px; border: 1px solid #d63384; width: 80%; margin-bottom: 10px; }
+        #letterBox { display: none; margin-top: 20px; cursor: pointer; }
+        #messageText { display: none; background: #fff; padding: 20px; border: 2px solid #ff4d6d; border-radius: 10px; text-align: left; font-size: 15px; }
+        #videoContainer { display: none; margin-top: 20px; }
+        video { width: 100%; border-radius: 10px; }
+        
+        .shake { animation: shake 0.3s; }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-10px); } 75% { transform: translateX(10px); } }
+    </style>
+</head>
+<body>
+
+    <div id="heart-bg"></div>
+
+    <div class="container" id="mainContainer">
+        <h1 id="question">Madam ji, kya aap meri girlfriend banogi?</h1>
+        
+        <div class="buttons" id="btnGroup">
+            <button id="yesBtn" onclick="handleYes()">Yes</button>
+            <button id="noBtn" onmouseover="handleNoMove()" onclick="handleNo()">No</button>
+        </div>
+
+        <div id="passwordArea">
+            <p>This letter is password protected!</p>
+            <p style="font-size: 12px; color: #888;">Hint: Ask Mohit 😉</p>
+            <input type="text" id="passInput" placeholder="Enter password...">
+            <br>
+            <button style="background: #d63384; color: white;" onclick="checkPassword()">Unlock</button>
+        </div>
+
+        <div id="letterBox" onclick="openLetter()">
+            <div style="font-size:80px">✉️</div>
+            <p>A letter for you from Mohit.</p>
+        </div>
+
+        <div id="messageText">
+            <h3 id="typingTitle" style="color: #d63384;"></h3>
+            <p id="typingBody" style="white-space: pre-line;"></p>
+            <button id="playBtn" style="background:#6f42c1; color:white; display:none; width: 100%; margin-top: 15px;" onclick="showVideo()">🎬 Play Video</button>
+            <div id="videoContainer"><video id="myVideo" controls><source src="v.mp4" type="video/mp4"></video></div>
+        </div>
+    </div>
+
+    <audio id="bgMusic" loop preload="auto">
+        <source src="music.mp3" type="audio/mpeg">
+    </audio>
+
+    <script>
+        let noCount = 0, yesCount = 0;
+        const noQs = ["Are you sure?", "Soch lo!", "Plz maan jao!", "Dil tod rahi hain!", "Okay, last chance..."];
+        const yesQs = ["Pakka?", "Sach mein?", "Lock kar dein?", "Theek hai, ab ye dekho! ❤️"];
+        const music = document.getElementById('bgMusic');
+
+        function createHeart() {
+            const heart = document.createElement('div');
+            heart.classList.add('heart');
+            heart.innerHTML = '❤️';
+            heart.style.left = Math.random() * 100 + 'vw';
+            heart.style.animationDuration = Math.random() * 3 + 2 + 's';
+            document.getElementById('heart-bg').appendChild(heart);
+            setTimeout(() => heart.remove(), 5000);
+        }
+        setInterval(createHeart, 300);
+
+        function handleNoMove() {
+            if (noCount >= 5) return;
+            const btn = document.getElementById('noBtn');
+            btn.style.transform = `translate(${Math.random()*200-100}px, ${Math.random()*200-100}px)`;
+        }
+
+        function handleNo() {
+            document.getElementById('mainContainer').classList.add('shake');
+            setTimeout(() => document.getElementById('mainContainer').classList.remove('shake'), 300);
+            if (noCount < 5) { document.getElementById('question').innerText = noQs[noCount++]; }
+            else { document.getElementById('noBtn').style.display='none'; }
+        }
+
+        function handleYes() {
+            music.play().catch(e => console.log("Playback error"));
+            if (yesCount < 4) {
+                document.getElementById('question').innerText = yesQs[yesCount++];
+                document.getElementById('yesBtn').style.transform = `scale(${1 + yesCount*0.2})`;
+            } else {
+                confetti({particleCount: 150, spread: 70});
+                document.getElementById('question').style.display = 'none';
+                document.getElementById('btnGroup').style.display = 'none';
+                document.getElementById('passwordArea').style.display = 'block';
+            }
+        }
+
+        function checkPassword() {
+            if (document.getElementById('passInput').value.toLowerCase() === "i love mohit") {
+                document.getElementById('passwordArea').style.display = 'none';
+                document.getElementById('letterBox').style.display = 'block';
+            } else { alert("wrong password"); }
+        }
+
+        function openLetter() {
+            document.getElementById('letterBox').style.display = 'none';
+            document.getElementById('messageText').style.display = 'block';
+            
+            const fullMsg = `Finally mann he gayi, jab hamlog mile the to pata nhi tha ki itne close ho jayenge. Ayur literally mujhe ye bhi nhi pata tha ki mujhe pyaar bhi ho jayega aapse kyunki mera to aisa plan he nhi tha but itni sundar, loyal, cute, understanding mile to kaise chor sakta hu to bas ho gaya pyaar mujhe aapse. Ayur haa ek cheez to mai bhul he gaya kabhi kabhi gussa karne wali Ayur gusse me to kya he batau 🤣 aisa aisa baat bol deti h ki samne rahti to ek jor ka hug karta ayur may be sara gussa khatam hi jata. 
+            
+            Khair ek baat puchna tha sayad aaj propose day h i think 💭,
+            To mai bhi propose kar he deta hu.
+            to will you be my valentine? se bhadiya 
+
+            will you be my Cutie pie?
+            Will you be my life partner?
+            Will you be my Sukoon?
+            Will you be my Humsafar?
+            Will you be my Khushi?
+            Will you be my Constant?
+            Will you be my Favorite Distraction?
+            Will you be my Home?
+            Will you be my Anchor?
+            Will you be my Everyday?
+            Will you be my wife?
+            Or will you be my ghar ki lakshmi?
+
+            Ab iska answer to aapko snapchat par he dena hoga kyunki mujhe itni bhi coding nhi aati ki mai yaha par koi answer box bana saku. Hehe sorry.
+            
+            Ab jo screen recording ki ho wo mujhe bhej do. Ayur saath me apna answer bhi. Hehe 😁`;
+
+            typeWriter("Madam Ji, ❤️", "typingTitle", 100, () => {
+                typeWriter(fullMsg, "typingBody", 40, () => {
+                    document.getElementById('playBtn').style.display = 'block';
+                });
+            });
+        }
+
+        function typeWriter(text, elementId, speed, callback) {
+            let i = 0;
+            const ele = document.getElementById(elementId);
+            function type() {
+                if (i < text.length) {
+                    ele.innerHTML += text.charAt(i);
+                    i++;
+                    setTimeout(type, speed);
+                } else if (callback) { callback(); }
+            }
+            type();
+        }
+
+        function showVideo() {
+            music.pause();
+            document.getElementById('videoContainer').style.display = 'block';
+            document.getElementById('playBtn').style.display = 'none';
+            document.getElementById('myVideo').play();
+        }
+    </script>
+</body>
+</html>
